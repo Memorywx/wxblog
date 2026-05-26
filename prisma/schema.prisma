@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String   @unique
+  content   String
+  excerpt   String?
+  cover     String?
+  published Boolean  @default(false)
+  views     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  comments  Comment[]
+  tags      Tag[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  content   String
+  createdAt DateTime @default(now())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  posts Post[]
+
+  @@map("tags")
+}
+
+model Shuo {
+  id        String   @id @default(cuid())
+  content   String
+  images    String   @default("[]")
+  color     String   @default("#f59e0b")
+  createdAt DateTime @default(now())
+
+  @@map("shuos")
+}
+
+model Album {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  cover       String?
+  createdAt   DateTime @default(now())
+
+  photos Photo[]
+
+  @@map("albums")
+}
+
+model Photo {
+  id        String   @id @default(cuid())
+  url       String
+  caption   String?
+  albumId   String
+  album     Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("photos")
+}
+
+model Admin {
+  id       String @id @default(cuid())
+  username String @unique
+  password String
+
+  @@map("admins")
+}
