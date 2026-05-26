@@ -120,7 +120,7 @@ export default function AdminLoginPage() {
             <Shield size={22} />
           </div>
           <h1 className="text-xl font-semibold tracking-tight">管理后台</h1>
-          <p className="text-xs text-[#86868b] mt-1">默认账号 admin / admin123</p>
+          <p className="text-xs text-[#86868b] mt-1">默认账号 admin</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">

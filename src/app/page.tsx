@@ -32,10 +32,10 @@ export default async function HomePage() {
               className="w-full h-full object-cover"
             />
           </div>
-          <h1 className="text-lg font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mt-4">wxblog</h1>
-          <p className="text-xs text-[#86868b] mt-1">全栈开发者 / 摄影爱好者</p>
+          <h1 className="text-lg font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mt-4">臭老头</h1>
+          <p className="text-xs text-[#86868b] mt-1">全栈开发者</p>
           <p className="text-sm text-[#6e6e73] mt-3 leading-relaxed">
-            热爱生活，喜欢代码与光影的交织。在这里记录技术成长与日常点滴。
+            随心记录。
           </p>
           <div className="flex justify-center gap-3 mt-5">
             <div className="glass px-4 py-2 rounded-xl text-center min-w-[70px]">
