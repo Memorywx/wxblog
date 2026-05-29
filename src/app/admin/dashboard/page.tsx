@@ -78,11 +78,20 @@ export default function DashboardPage() {
     const auth = t || token
     const [statsRes, postsRes, shuosRes, albumsRes, photosRes] = await Promise.all([
       fetch('/api/stats'),
-      fetch('/api/posts?published=false'),
+      fetch('/api/posts?published=false', {
+        headers: auth ? { Authorization: `Bearer ${auth}` } : undefined,
+      }),
       fetch('/api/shuos'),
       fetch('/api/albums'),
       fetch('/api/photos'),
     ])
+
+    if (postsRes.status === 401) {
+      localStorage.removeItem('admin_token')
+      router.push(`/${getAdminPath()}`)
+      return
+    }
+
     setStats(await statsRes.json())
     setPosts(await postsRes.json())
     const shuosData = await shuosRes.json()
@@ -347,9 +356,15 @@ export default function DashboardPage() {
                             <td className="px-4 py-3 text-[#86868b]">{formatDate(post.createdAt)}</td>
                             <td className="px-4 py-3 text-right">
                               <div className="flex items-center justify-end gap-1">
-                                <a href={`/posts/${post.slug}`} target="_blank" className="p-1.5 rounded-lg hover:bg-[#0071e3]/10 text-[#0071e3] transition-colors">
-                                  <Eye size={14} />
-                                </a>
+                                {post.published ? (
+                                  <a href={`/posts/${post.slug}`} target="_blank" className="p-1.5 rounded-lg hover:bg-[#0071e3]/10 text-[#0071e3] transition-colors">
+                                    <Eye size={14} />
+                                  </a>
+                                ) : (
+                                  <span title="草稿未公开" className="p-1.5 rounded-lg text-[#86868b]/70 cursor-not-allowed">
+                                    <Eye size={14} />
+                                  </span>
+                                )}
                                 <Link href={`/${getAdminPath()}/editor?slug=${post.slug}`} className="p-1.5 rounded-lg hover:bg-[#ff9500]/10 text-[#ff9500] transition-colors">
                                   <Edit3 size={14} />
                                 </Link>

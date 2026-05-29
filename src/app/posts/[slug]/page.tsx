@@ -29,10 +29,16 @@ export default function PostPage() {
 
   useEffect(() => {
     if (!slug) return
+
+    setLoading(true)
     fetch(`/api/posts/${slug}`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         setPost(data)
+        setLoading(false)
+      })
+      .catch(() => {
+        setPost(null)
         setLoading(false)
       })
   }, [slug])

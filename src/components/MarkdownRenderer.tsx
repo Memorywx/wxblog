@@ -18,7 +18,7 @@ export default function MarkdownRenderer({ content }: Props) {
         rehypePlugins={[
           rehypeSlug,
           [rehypeAutolinkHeadings, { behavior: 'wrap', properties: { className: ['anchor-link'] } }],
-          rehypeHighlight,
+          [rehypeHighlight, { detect: true, ignoreMissing: true }],
         ]}
       >
         {content}

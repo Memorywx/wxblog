@@ -7,10 +7,37 @@ import { ArrowLeft, Save, Eye, CheckCircle } from 'lucide-react'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 import { getAdminPath } from '@/lib/admin-path'
 
+interface EditorPost {
+  title: string
+  slug: string
+  cover: string | null
+  excerpt: string | null
+  content: string
+  published: boolean
+  tags: { name: string }[]
+}
+
+function isEditorPost(data: EditorPost | { error?: string }): data is EditorPost {
+  return 'title' in data && 'slug' in data && 'content' in data && Array.isArray(data.tags)
+}
+
+async function getErrorMessage(res: Response) {
+  try {
+    const data = await res.json() as { error?: string }
+    if (data.error === 'Unauthorized') return '登录状态已失效，请重新登录后再保存。'
+    if (data.error === 'Slug already exists') return '当前链接标识已存在，请更换后再保存。'
+    if (data.error === 'Missing required fields') return '标题、链接标识和正文不能为空。'
+    return data.error || '保存失败，请稍后重试。'
+  } catch {
+    return '保存失败，请稍后重试。'
+  }
+}
+
 function EditorContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const editSlug = searchParams.get('slug')
+  const adminPath = getAdminPath()
 
   const [token, setToken] = useState('')
   const [title, setTitle] = useState('')
@@ -23,37 +50,58 @@ function EditorContent() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const t = localStorage.getItem('admin_token')
     if (!t) {
-      router.push(`/${getAdminPath()}`)
+      router.push(`/${adminPath}`)
       return
     }
     setToken(t)
 
     if (editSlug) {
       setLoading(true)
-      fetch(`/api/posts/${editSlug}`)
+      fetch(`/api/posts/${editSlug}?view=false`, {
+        headers: { Authorization: `Bearer ${t}` },
+      })
         .then((r) => r.json())
-        .then((data) => {
+        .then((data: EditorPost | { error?: string }) => {
+          if (!isEditorPost(data)) {
+            throw new Error(data.error || '加载文章失败')
+          }
+
           setTitle(data.title || '')
           setSlug(data.slug || '')
           setCover(data.cover || '')
           setExcerpt(data.excerpt || '')
-          setTags(data.tags?.map((t: any) => t.name).join(', ') || '')
+          setTags(data.tags.map((item) => item.name).join(', '))
           setContent(data.content || '')
           setPublished(data.published ?? true)
           setLoading(false)
         })
+        .catch((err: Error) => {
+          setError(err.message || '加载文章失败，请返回列表重试。')
+          setLoading(false)
+        })
     }
-  }, [editSlug, router])
+  }, [adminPath, editSlug, router])
 
   async function handleSave(e?: React.FormEvent) {
     if (e) e.preventDefault()
-    if (!title.trim() || !slug.trim() || !content.trim()) return
+    if (!title.trim() || !slug.trim() || !content.trim()) {
+      setError('标题、链接标识和正文不能为空。')
+      return
+    }
+
+    if (!token) {
+      setError('登录状态已失效，请重新登录后再保存。')
+      return
+    }
+
     setSaving(true)
     setSaved(false)
+    setError('')
 
     const data = {
       title,
@@ -68,25 +116,35 @@ function EditorContent() {
     const url = editSlug ? `/api/posts/${editSlug}` : '/api/posts'
     const method = editSlug ? 'PUT' : 'POST'
 
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(data),
-    })
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(data),
+      })
 
-    if (res.ok) {
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-      if (!editSlug) {
-        setTitle('')
-        setSlug('')
-        setExcerpt('')
-        setTags('')
-        setContent('')
-        setCover('')
-        setPublished(true)
+      if (res.ok) {
+        const savedPost = await res.json() as { slug: string }
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
+        if (editSlug && savedPost.slug !== editSlug) {
+          router.replace(`/${adminPath}/editor?slug=${savedPost.slug}`)
+        } else if (!editSlug) {
+          setTitle('')
+          setSlug('')
+          setExcerpt('')
+          setTags('')
+          setContent('')
+          setCover('')
+          setPublished(true)
+        }
+      } else {
+        setError(await getErrorMessage(res))
       }
+    } catch {
+      setError('网络异常，保存失败，请稍后重试。')
     }
+
     setSaving(false)
   }
 
@@ -128,6 +186,7 @@ function EditorContent() {
               <CheckCircle size={13} /> 已保存
             </span>
           )}
+          {error && <span className="hidden sm:block text-xs text-[#ff3b30] max-w-72 truncate">{error}</span>}
           <button
             onClick={() => handleSave()}
             disabled={saving}
@@ -145,6 +204,7 @@ function EditorContent() {
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
           {/* Meta fields */}
           <div className="p-4 space-y-3 border-b border-black/5 dark:border-white/5">
+            {error && <div className="sm:hidden text-sm text-[#ff3b30] rounded-xl bg-[#ff3b30]/10 px-4 py-3">{error}</div>}
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
