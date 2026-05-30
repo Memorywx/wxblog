@@ -112,7 +112,7 @@ export default function PostPage() {
             />
           </article>
 
-          <aside className="hidden lg:block">
+          <aside className="hidden lg:block lg:sticky lg:top-24 lg:self-start">
             <TableOfContents />
           </aside>
         </div>

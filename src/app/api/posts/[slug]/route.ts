@@ -99,3 +99,26 @@ export async function DELETE(
   await prisma.post.delete({ where: { slug } })
   return NextResponse.json({ success: true })
 }
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  const admin = verifyAdmin(req)
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { slug } = await params
+  const body = await req.json() as { published?: unknown }
+
+  if (typeof body.published !== 'boolean') {
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+  }
+
+  const post = await prisma.post.update({
+    where: { slug },
+    data: { published: body.published },
+    include: { tags: true },
+  })
+
+  return NextResponse.json(post)
+}

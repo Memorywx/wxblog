@@ -39,11 +39,11 @@ export default function TableOfContents() {
   if (headings.length === 0) return null
 
   return (
-    <div className="glass-card p-5 sticky top-24">
+    <div className="glass-card p-5">
       <h3 className="text-xs font-semibold uppercase tracking-widest text-[#86868b] mb-4">
         目录
       </h3>
-      <nav className="space-y-0.5 max-h-[70vh] overflow-y-auto">
+      <nav className="space-y-0.5 max-h-[calc(100vh-8rem)] overflow-y-auto pr-1">
         {headings.map((h) => (
           <a
             key={h.id}

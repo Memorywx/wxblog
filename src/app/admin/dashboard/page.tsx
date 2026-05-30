@@ -49,16 +49,28 @@ interface Stats {
   monthly: [string, number][]
 }
 
+interface DashboardPost {
+  id: string
+  title: string
+  slug: string
+  published: boolean
+  views: number
+  createdAt: string
+  tags: { name: string }[]
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const [token, setToken] = useState('')
   const [tab, setTab] = useState<Tab>('overview')
   const [stats, setStats] = useState<Stats | null>(null)
-  const [posts, setPosts] = useState<any[]>([])
+  const [posts, setPosts] = useState<DashboardPost[]>([])
   const [shuos, setShuos] = useState<any[]>([])
   const [albums, setAlbums] = useState<any[]>([])
   const [photos, setPhotos] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [postSearch, setPostSearch] = useState('')
+  const [togglingSlug, setTogglingSlug] = useState('')
 
   const [shuoModal, setShuoModal] = useState(false)
   const [albumModal, setAlbumModal] = useState(false)
@@ -99,6 +111,25 @@ export default function DashboardPage() {
     setAlbums(await albumsRes.json())
     setPhotos(await photosRes.json())
     setLoading(false)
+  }
+
+  async function togglePostPublished(post: DashboardPost) {
+    setTogglingSlug(post.slug)
+
+    try {
+      const res = await fetch(`/api/posts/${post.slug}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ published: !post.published }),
+      })
+
+      if (res.ok) {
+        const updated = await res.json() as DashboardPost
+        setPosts((current) => current.map((item) => (item.id === updated.id ? updated : item)))
+      }
+    } finally {
+      setTogglingSlug('')
+    }
   }
 
   function logout() {
@@ -188,6 +219,17 @@ export default function DashboardPage() {
     { key: 'shuos' as Tab, label: '说说', icon: StickyNote },
     { key: 'photos' as Tab, label: '照片', icon: Image },
   ]
+
+  const filteredPosts = posts.filter((post) => {
+    const keyword = postSearch.trim().toLowerCase()
+    if (!keyword) return true
+
+    const haystack = [post.title, post.slug, post.tags.map((tag) => tag.name).join(' ')]
+      .join(' ')
+      .toLowerCase()
+
+    return haystack.includes(keyword)
+  })
 
   if (loading) {
     return (
@@ -324,12 +366,23 @@ export default function DashboardPage() {
 
             {tab === 'posts' && (
               <motion.div key="posts" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">文章管理</h2>
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-lg font-semibold">文章管理</h2>
+                    <span className="text-sm text-[#86868b]">{filteredPosts.length} / {posts.length}</span>
+                  </div>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <input
+                      value={postSearch}
+                      onChange={(e) => setPostSearch(e.target.value)}
+                      placeholder="搜索标题、slug、标签"
+                      className="w-full sm:w-64 px-4 py-2 rounded-xl bg-white/40 dark:bg-white/5 border border-black/5 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20 text-sm"
+                    />
                   <Link href={`/${getAdminPath()}/editor`}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0071e3] text-white text-sm font-medium hover:bg-[#0077ed] transition-all shadow-md shadow-blue-500/15">
                     <Plus size={14} /> 新建文章
                   </Link>
+                  </div>
                 </div>
                 <div className="glass-card overflow-hidden">
                   <div className="overflow-x-auto">
@@ -344,13 +397,22 @@ export default function DashboardPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-black/5 dark:divide-white/5">
-                        {posts.map((post) => (
+                        {filteredPosts.map((post) => (
                           <tr key={post.id}>
-                            <td className="px-4 py-3 font-medium text-[#1d1d1f] dark:text-[#f5f5f7]">{post.title}</td>
+                            <td className="px-4 py-3 font-medium text-[#1d1d1f] dark:text-[#f5f5f7]">
+                              <div className="space-y-1">
+                                <div>{post.title}</div>
+                                <div className="text-xs font-normal text-[#86868b]">/{post.slug}</div>
+                              </div>
+                            </td>
                             <td className="px-4 py-3">
-                              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium ${post.published ? 'bg-[#34c759]/10 text-[#34c759]' : 'bg-[#8e8e93]/10 text-[#8e8e93]'}`}>
-                                {post.published ? '已发布' : '草稿'}
-                              </span>
+                              <button
+                                onClick={() => togglePostPublished(post)}
+                                disabled={togglingSlug === post.slug}
+                                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors disabled:opacity-60 ${post.published ? 'bg-[#34c759]/10 text-[#34c759] hover:bg-[#34c759]/15' : 'bg-[#8e8e93]/10 text-[#8e8e93] hover:bg-[#8e8e93]/15'}`}
+                              >
+                                {togglingSlug === post.slug ? '处理中...' : post.published ? '已发布' : '草稿'}
+                              </button>
                             </td>
                             <td className="px-4 py-3">{post.views}</td>
                             <td className="px-4 py-3 text-[#86868b]">{formatDate(post.createdAt)}</td>
@@ -375,6 +437,13 @@ export default function DashboardPage() {
                             </td>
                           </tr>
                         ))}
+                        {filteredPosts.length === 0 && (
+                          <tr>
+                            <td colSpan={5} className="px-4 py-10 text-center text-sm text-[#86868b]">
+                              没有匹配的文章
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
