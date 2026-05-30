@@ -20,13 +20,13 @@ export default async function HomePage() {
 
   return (
     <div className="max-w-[980px] mx-auto">
-      <div className="glass-card p-5 sm:p-6 md:p-8 space-y-5">
-        <section className="glass rounded-[28px] p-6 md:p-7 border border-white/20">
+      <div className="glass-card p-5 sm:p-6 md:p-8 space-y-4">
+        <section className="rounded-[28px] border border-black/5 bg-white/20 p-6 md:p-7 dark:border-white/8 dark:bg-white/[0.04]">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-col sm:flex-row sm:items-center gap-5">
               <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/40 shadow-sm shrink-0">
                 <img
-                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=wxblog"
+                  src="/avatar.jpg"
                   alt="avatar"
                   className="w-full h-full object-cover"
                 />
@@ -42,16 +42,16 @@ export default async function HomePage() {
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3 sm:min-w-[320px]">
-              <div className="rounded-2xl bg-white/35 px-4 py-4 dark:bg-white/5 text-center">
+            <div className="grid grid-cols-3 gap-2.5 sm:min-w-[320px]">
+              <div className="rounded-2xl border border-black/5 bg-white/25 px-4 py-4 text-center dark:border-white/8 dark:bg-white/[0.045]">
                 <div className="flex items-center justify-center gap-2 text-xs text-[#86868b]"><FileText size={13} /> 文章</div>
                 <div className="mt-2 text-2xl font-semibold tracking-tight">{postsCount}</div>
               </div>
-              <div className="rounded-2xl bg-white/35 px-4 py-4 dark:bg-white/5 text-center">
+              <div className="rounded-2xl border border-black/5 bg-white/25 px-4 py-4 text-center dark:border-white/8 dark:bg-white/[0.045]">
                 <div className="flex items-center justify-center gap-2 text-xs text-[#86868b]"><MessageCircle size={13} /> 说说</div>
                 <div className="mt-2 text-2xl font-semibold tracking-tight">{shuosCount}</div>
               </div>
-              <div className="rounded-2xl bg-white/35 px-4 py-4 dark:bg-white/5 text-center">
+              <div className="rounded-2xl border border-black/5 bg-white/25 px-4 py-4 text-center dark:border-white/8 dark:bg-white/[0.045]">
                 <div className="flex items-center justify-center gap-2 text-xs text-[#86868b]"><TrendingUp size={13} /> 阅读</div>
                 <div className="mt-2 text-2xl font-semibold tracking-tight">{totalViews._sum.views || 0}</div>
               </div>
@@ -59,7 +59,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="glass rounded-[28px] p-6 md:p-7 border border-white/20">
+        <section className="rounded-[28px] border border-black/5 bg-white/16 p-6 md:p-7 dark:border-white/8 dark:bg-white/[0.035]">
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
@@ -71,12 +71,12 @@ export default async function HomePage() {
               </Link>
             </div>
             {latestPosts.length === 0 ? (
-              <div className="glass rounded-2xl px-5 py-10 text-sm text-[#86868b] text-center">暂时还没有已发布文章。</div>
+              <div className="rounded-2xl border border-dashed border-black/8 bg-white/18 px-5 py-10 text-center text-sm text-[#86868b] dark:border-white/10 dark:bg-white/[0.03]">暂时还没有已发布文章。</div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {latestPosts.map((post) => (
                   <Link key={post.id} href={`/posts/${post.slug}`}>
-                    <article className="glass p-4 rounded-2xl flex gap-4 group cursor-pointer hover:bg-white/40 dark:hover:bg-white/10 transition-colors">
+                    <article className="group flex gap-4 rounded-2xl border border-black/5 bg-white/20 p-4 transition-colors hover:bg-white/30 dark:border-white/8 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]">
                       {post.cover && (
                         <div className="hidden sm:block w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden border border-black/5">
                           <img
@@ -101,7 +101,7 @@ export default async function HomePage() {
                             <Eye size={11} /> {post.views}
                           </span>
                           {post.tags.length > 0 && (
-                            <span className="glass px-2 py-0.5 rounded-full">{post.tags[0].name}</span>
+                            <span className="rounded-full bg-black/[0.04] px-2 py-0.5 dark:bg-white/[0.06]">{post.tags[0].name}</span>
                           )}
                         </div>
                       </div>
