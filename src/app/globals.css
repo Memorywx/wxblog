@@ -203,6 +203,12 @@ body {
   margin: 2rem 0;
   font-size: 0.9rem;
   line-height: 1.6;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dark .prose-custom pre {
+  background: #16181d;
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .prose-custom pre .hljs {
@@ -212,7 +218,7 @@ body {
   color: inherit;
 }
 
-.prose-custom code {
+.prose-custom :not(pre) > code {
   background: rgba(0, 113, 227, 0.08);
   padding: 0.2rem 0.4rem;
   border-radius: 6px;
@@ -221,7 +227,7 @@ body {
   font-family: 'SF Mono', ui-monospace, monospace;
 }
 
-.dark .prose-custom code {
+.dark .prose-custom :not(pre) > code {
   background: rgba(0, 113, 227, 0.15);
   color: #2997ff;
 }
@@ -230,6 +236,12 @@ body {
   background: transparent;
   color: inherit;
   padding: 0;
+}
+
+.dark .prose-custom pre code,
+.dark .prose-custom pre .hljs {
+  background: transparent !important;
+  color: #e6edf3;
 }
 
 .prose-custom a {
